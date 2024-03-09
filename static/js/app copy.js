@@ -142,7 +142,7 @@ function createGauge(demographics){
     {
       domain: { x: [0, 1], y: [0, 1] },
       value: demographics.wfreq,
-      title: { text: "Belly Button Washing Frequency"},
+      title: { text: "Belly Button Washing Frequency" },
       type: "indicator",
       mode: "gauge+number",
       gauge: {
