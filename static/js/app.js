@@ -6,15 +6,15 @@ d3.json(url).then(function(data) {
   // Can send names or data.names (data already had a list of names/subject ids for us)
   let names = data.samples.map(name => name.id);
   
-  //Call createDropDown function to creater interactive dropdown menu by passing list of subject ID numbers. 
+  //Call createDropDown function to create interactive dropdown menu by passing list of subject ID numbers. 
   createDropDown(data.names);
   
   //DELETE WHEN DONE ******************************8
-  console.log(data.samples[1]);
+  console.log(data.samples[2]);
   
   //call init to initialize all charts with sample data (element 0, id: 940)
   init(data);
-
+  
 });
 
 // Function will append dropdown options for each name in sample dataset and append value and text
@@ -28,12 +28,12 @@ function createDropDown(names){
 function init(data){
   let person = data.samples[0];
   let demographics = data.metadata[0];
-  updateBar(person);
-  updateBubble(person);
-  updateDemo(demographics);
+  createBar(person);
+  createBubble(person);
+  createDemo(demographics);
 }
 
-function updateBar(person){
+function createBar(person){
   // slice first 10 (top 10) OTU ids and map text 'OTU' in front of each ID 
   let top10_ids = person.otu_ids.slice(0,10).map(id => `OTU ${id}`);
 
@@ -52,14 +52,14 @@ function updateBar(person){
   // Apply layout (height/width)
   let layout = {
     height: 500, 
-    width: 350
+    width: 450
   };
 
   // Render the plot to the div tag with id "bar"
   Plotly.newPlot("bar", bar, layout);
 }
 
-function updateBubble(person){
+function createBubble(person){
   let trace2 = {
     x: person.otu_ids,
     y: person.sample_values,
@@ -116,56 +116,61 @@ var updatemenus=[
 
   let layout = {
     showlegend: false,
-    height: 500,
-    width: 800,
+    height: 600,
+    width: 1300,
+    //FOR INDEX2 // width: 750,
     updatemenus: updatemenus,
     annotations:annotations
   };
+
+  //let config = {responsive: true}
   
   Plotly.newPlot('bubble', data, layout);
 }
 
-function updateDemo(demographics){
-  console.log(demographics);
-  console.log(Object.entries(demographics));
+function createDemo(demographics){
   let demo_list = Object.entries(demographics);
-  demo_chart = d3.select('.card-header');
+  let demo_chart = d3.select('#sample-metadata');
+  //d3.select('#sample-metadata').append('ul').attr('style',"list-style-type:none;");
+  //let test = d3.select('#sample-metadata').select('ul');
   for (i = 0; i < demo_list.length;i++){
-    demo_chart.append('p').text(`${demo_list[i][0]}: ${demo_list[i][1]}`)
-    }
+    demo_chart.append('p').text(`${demo_list[i][0]}: ${demo_list[i][1]}`).attr("style","margin-bottom: .5rem;");
+    //test.append('li').text(`${demo_list[i][0]}: ${demo_list[i][1]}`);
+  }
 }
 
 function optionChanged(id){
   console.log(id);
+  d3.json(url).then(function(data) {
+    let person = data.samples[id];
+    let demographics = data.metadata[id];
+
+    //Restyle Bar Graph
+
+    // slice first 10 (top 10) OTU ids and map text 'OTU' in front of each ID 
+    let top10_ids = person.otu_ids.slice(0,10).map(id => `OTU ${id}`);
+
+    Plotly.restyle('bar', 'x',[person.sample_values.slice(0,10).reverse()]);
+    Plotly.restyle('bar', 'y',[top10_ids.reverse()]);
+    Plotly.restyle('bar', 'text',[person.otu_labels.slice(0,10).reverse()]);
+  
+    //Restyle Bubble Chart
+    let update = {
+      x: [person.otu_ids],
+      y: [person.sample_values],
+      text: [person.otu_labels],
+      'marker.color':[person.otu_ids],
+      'marker.size': [person.sample_values]
+    }
+    
+    Plotly.restyle('bubble',update);
+
+
+    //Update demographics 
+    d3.select('#sample-metadata').html('');
+    //d3.select('#sample-metadata').selectAll('p').remove());
+    console.log(demographics);
+    createDemo(demographics);
+  
+  });
 }
-
-//USE MAP to do FILTERING and adding OTU text instead of FOR LOOP 
-
-
-
-// // Trace1 for the Greek Data
-// let trace1 = {
-//   x: slicedData.map(object => object.greekSearchResults),
-//   y: slicedData.map(object => object.greekName),
-//   text: slicedData.map(object => object.greekName),
-//   name: "Greek",
-//   type: "bar",
-//   orientation: "h"
-// };
-
-// // Data array
-// let data = [trace1];
-
-// // Apply a title to the layout
-// let layout = {
-//   title: "Greek gods search results",
-//   margin: {
-//     l: 100,
-//     r: 100,
-//     t: 100,
-//     b: 100
-//   }
-// };
-
-// // Render the plot to the div tag with id "plot"
-// Plotly.newPlot("plot", data, layout);
