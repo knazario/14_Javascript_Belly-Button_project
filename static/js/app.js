@@ -146,21 +146,45 @@ function createGauge(demographics){
       type: "indicator",
       mode: "gauge+number",
       gauge: {
-        axis: { range: [null, 9] },
+        axis: { 
+          range: [null, 9], 
+          showticklabels:false, 
+          ticks: ''
+
+        },
         steps: [
-          { range: [0, 1], color: "lightgray", name: "0-1"},
-          { range: [7, 8], color: "lightgray", name: "0-1"},
-          { range: [2, 3], color: "lightgray", name: "0-1"},
-          { range: [3, 4], color: "lightgray", name: "0-1"},
-          { range: [4, 5], color: "lightgray", name: "0-1"},
-          { range: [5, 6], color: "lightgray", name: "0-1"},
-          { range: [6, 7], color: "lightgray", name: "0-1"},
-          { range: [7, 8], color: "lightgray", name: "0-1"},
+          { range: [0, 1], color: "lightgray"},
+          { range: [1, 2], color: "lightgray"},
+          { range: [2, 3], color: "lightgray"},
+          { range: [3, 4], color: "lightgray"},
+          { range: [4, 5], color: "lightgray"},
+          { range: [5, 6], color: "lightgray"},
+          { range: [6, 7], color: "lightgray"},
+          { range: [7, 8], color: "lightgray"},
           { range: [8, 9], color: "gray" }
         ]}
     }
   ];
-  let layout = {width: 600, height: 500, margin: { t: 0, b: 0 } };
+
+  let annotations = [
+    {x: 0.5, y: -0.1, text: "0-1", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'top'},
+    {x: 0.82, y: 0.16, text: "1-2", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'top'},
+    {x: 0, y: 0.34, text: "2-3", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'top'},
+    {x: 0.97, y: 0.5, text: "3-4", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'middle'},
+    {x: 0.92, y: 0.66, text: "4-5", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'bottom'},
+    {x: 0.82, y: 0.84, text: "5-6", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'bottom'},
+    {x: 0.5, y: 0.95, text: "6-7", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'bottom'},
+    {x: 0.18, y: 0.84, text: "7-8", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'bottom'},
+    {x: 0.08, y: 0.66, text: "8-9", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'bottom'}
+  ];
+
+  let layout = {
+    width: 600, 
+    height: 500, 
+    margin: { t: 0, b: 0 }, 
+    annotations:annotations
+  };
+
   Plotly.newPlot('gauge', data, layout);
 }
 
@@ -171,7 +195,6 @@ function optionChanged(id){
     let demographics = data.metadata[id];
 
     //Restyle Bar Graph
-
     // slice first 10 (top 10) OTU ids and map text 'OTU' in front of each ID 
     let top10_ids = person.otu_ids.slice(0,10).map(id => `OTU ${id}  `);
 
@@ -196,6 +219,9 @@ function optionChanged(id){
     //d3.select('#sample-metadata').selectAll('p').remove());
     console.log(demographics);
     createDemo(demographics);
+
+    //Update Gague Chart (send new value for wfreq)
+    Plotly.restyle('gauge','value',[demographics.wfreq]);
   
   });
 }
