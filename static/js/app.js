@@ -3,31 +3,76 @@ const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/
 // Fetch the JSON data
 d3.json(url).then(function(data) {
 
-  // Can send names or data.names (data already had a list of names/subject ids for us)
+  // Create list of subject ids for dropdown (alternatively could use data.names in data source)
   let names = data.samples.map(name => name.id);
   
   //Call createDropDown function to create interactive dropdown menu by passing list of subject ID numbers. 
-  createDropDown(data.names);
-  
-  //DELETE WHEN DONE ******************************8
-  console.log(data.samples[2]);
+  createDropDown(names);
   
   //call init to initialize all charts with sample data (element 0, id: 940)
   init(data);
   
+  d3.select("#selDataset").on("change", updateAll);
+
+  // updateAll function needs to be within .then() in order to access data and run on dropdown change
+  function updateAll(){
+    // Assign the value of the dropdown menu option to a variable
+    let sub_id = d3.select("#selDataset").property("value");
+    // assign bacteria and demographic data to selected id based on array position 
+    let person = data.samples[sub_id];
+    let demographics = data.metadata[sub_id];
+
+    //Restyle Bar Graph
+    // slice first 10 (top 10) OTU ids and map text 'OTU' in front of each ID 
+    let top10_ids = person.otu_ids.slice(0,10).map(id => `OTU ${id}  `);
+    // Update person/subject-specific data in bargraph (x values, y values and hover text)
+    let updateBar = {
+      x: [person.sample_values.slice(0,10).reverse()],
+      y: [top10_ids.reverse()],
+      text:[person.otu_labels.slice(0,10).reverse()]
+    }
+    // Restyle bar graph using updated data
+    Plotly.restyle('bar', updateBar);
+
+    //Restyle Bubble Chart
+    // Update person/subject-specific data in bargraph (x values, y values and hover text)
+    let updateBubble = {
+      x: [person.otu_ids],
+      y: [person.sample_values],
+      text: [person.otu_labels],
+      'marker.color':[person.otu_ids],
+      'marker.size': [person.sample_values]
+    }
+    
+    Plotly.restyle('bubble',updateBubble);
+
+
+    //Update demographics 
+    d3.select('#sample-metadata').html('');
+    //d3.select('#sample-metadata').selectAll('p').remove());
+    console.log(demographics);
+    createDemo(demographics);
+
+    //Update Gague Chart (send new value for wfreq)
+    Plotly.restyle('gauge','value',[demographics.wfreq]);
+  }
 });
 
 // Function will append dropdown options for each name in sample dataset and append value and text
 function createDropDown(names){
+  // select dropdown tag (select tag with id = selDataset)
   let dropDown = d3.select("#selDataset");
+  // iterate through list of subject ids and create an option tag with each id and with a value corresponding to array position
   for (i = 0; i < names.length; i++){
     dropDown.append('option').text(names[i]).attr('value',i);
   }
 }
 
 function init(data){
+  //setting dataset to first subject (940): assigning variable for bacteria data and demographic data
   let person = data.samples[0];
   let demographics = data.metadata[0];
+  //call each chart/visual function to generate initial charts/visuals with sample dataset
   createBar(person);
   createBubble(person);
   createDemo(demographics);
@@ -61,20 +106,21 @@ function createBar(person){
 }
 
 function createBubble(person){
+  //trace 2 for bubble chart
   let trace2 = {
     x: person.otu_ids,
     y: person.sample_values,
     text: person.otu_labels,
     mode: 'markers',
-    marker: {
+    marker: {                   // for each point/bubble, set color based on OTU ID and size based on sample value
       color: person.otu_ids,
-      colorscale:'Earth',
+      colorscale:'Earth',       // set default colorscale to Earth color palette
       size: person.sample_values
     }
   };
-  
-  let data = [trace2];
-  
+  // set data array
+  let bubble = [trace2];
+  // annotate line of text for Color Scale Menu
   let annotations = [{
     text: 'Color Scale:',
     y: 1.1,
@@ -82,7 +128,7 @@ function createBubble(person){
     align: 'left',
     showarrow: false,
   }];
-
+  // Create 3 buttons for 3 different color scales to alternate between when displaying bubble chart 
   let updatemenus=[{
     buttons: [
       {
@@ -105,123 +151,73 @@ function createBubble(person){
     pad: {'r': 0, 't': 10},
     showactive: true,
     type: 'buttons',
-    x: 0.18,
+    x: 0.12,
     xanchor: 'left',
     y: 1.15,
     yanchor: 'top'
   }];
-
+  // set layout (h, w, menu, annotations and xaxis label)
   let layout = {
     showlegend: false,
     height: 600,
     width: 1300,
-    //FOR INDEX2 // width: 750,
     updatemenus: updatemenus,
-    annotations:annotations
+    annotations:annotations,
+    xaxis: {title:{text: 'OTU ID'}}
   };
-
-  //let config = {responsive: true}
-  
-  Plotly.newPlot('bubble', data, layout);
+  // Render the plot to the div tag with id "bubble"
+  Plotly.newPlot('bubble', bubble, layout);
 }
 
 function createDemo(demographics){
+  // create a list of demographic key/value pairs
   let demo_list = Object.entries(demographics);
+  // select the div where the demographic data needs to be inserted
   let demo_chart = d3.select('#sample-metadata');
-  //d3.select('#sample-metadata').append('ul').attr('style',"list-style-type:none;");
-  //let test = d3.select('#sample-metadata').select('ul');
+  // iterate through key/value pairs and append each pair to a paragraph element in the div
+  // apply style to adjust default margin to decrease spacing between lines
   for (i = 0; i < demo_list.length;i++){
     demo_chart.append('p').text(`${demo_list[i][0]}: ${demo_list[i][1]}`).attr("style","margin-bottom: .5rem;");
-    //test.append('li').text(`${demo_list[i][0]}: ${demo_list[i][1]}`);
   }
 }
 
 function createGauge(demographics){
-  console.log(demographics.wfreq)
-  let data = [
-    {
-      domain: { x: [0, 1], y: [0, 1] },
-      value: demographics.wfreq,
-      title: { text: "Belly Button Washing Frequency"},
-      type: "indicator",
-      mode: "gauge+number",
-      gauge: {
-        axis: { 
-          range: [null, 9], 
-          showticklabels:false, 
-          ticks: ''
-
-        },
-        steps: [
-          { range: [0, 1], color: "lightgray"},
-          { range: [1, 2], color: "lightgray"},
-          { range: [2, 3], color: "lightgray"},
-          { range: [3, 4], color: "lightgray"},
-          { range: [4, 5], color: "lightgray"},
-          { range: [5, 6], color: "lightgray"},
-          { range: [6, 7], color: "lightgray"},
-          { range: [7, 8], color: "lightgray"},
-          { range: [8, 9], color: "gray" }
-        ]}
-    }
-  ];
-
-  let annotations = [
-    {x: 0.5, y: -0.1, text: "0-1", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'top'},
-    {x: 0.82, y: 0.16, text: "1-2", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'top'},
-    {x: 0, y: 0.34, text: "2-3", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'top'},
-    {x: 0.97, y: 0.5, text: "3-4", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'middle'},
-    {x: 0.92, y: 0.66, text: "4-5", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'bottom'},
-    {x: 0.82, y: 0.84, text: "5-6", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'bottom'},
-    {x: 0.5, y: 0.95, text: "6-7", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'bottom'},
-    {x: 0.18, y: 0.84, text: "7-8", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'bottom'},
-    {x: 0.08, y: 0.66, text: "8-9", showarrow: false, xref: 'paper', yref: 'paper', xanchor: 'center', yanchor: 'bottom'}
-  ];
-
+  // trace 3 for gague chart
+  let trace3 = {
+    domain: { x: [0, 1], y: [0, 1] },
+    value: demographics.wfreq,    // set value of washing frequency to gauge value 
+    title: { text: "<b>Belly Button Washing Frequency</b><br>Scrubs per Week"},
+    type: "indicator",
+    mode: "gauge+number",   // display gauge and number 
+    gauge: {
+      axis: { // set range, tick steps and font size 
+        range: [null, 9], 
+        tickvals: [1,2,3,4,5,6,7,8,9], 
+        ticktext:[1,2,3,4,5,6,7,8,9],
+        visible:true, 
+        tickfont:{size: 18}
+      },
+      bar: {color: '#005a70'},  // set gauge bar color 
+      steps: [              // set 9 steps with a gradient of colors for each step
+        { range: [0, 1], color: "#c0dfe7"}, 
+        { range: [1, 2], color: "#a0cfdb"},  
+        { range: [2, 3], color: "#80bfce"},  
+        { range: [3, 4], color: "#60afc2"},  
+        { range: [4, 5], color: "#50a7bc"},  
+        { range: [5, 6], color: "#409fb5"},  
+        { range: [6, 7], color: "#2893ac"},  
+        { range: [7, 8], color: "#1087a3"},  
+        { range: [8, 9], color: "#007e9c"}   
+      ]}
+  };
+  // data array for plot 
+  let gauge = [trace3];
+  // set layout 
   let layout = {
     width: 600, 
     height: 500, 
     margin: { t: 0, b: 0 }, 
-    annotations:annotations
   };
-
-  Plotly.newPlot('gauge', data, layout);
-}
-
-function optionChanged(id){
-  console.log(id);
-  d3.json(url).then(function(data) {
-    let person = data.samples[id];
-    let demographics = data.metadata[id];
-
-    //Restyle Bar Graph
-    // slice first 10 (top 10) OTU ids and map text 'OTU' in front of each ID 
-    let top10_ids = person.otu_ids.slice(0,10).map(id => `OTU ${id}  `);
-
-    Plotly.restyle('bar', 'x',[person.sample_values.slice(0,10).reverse()]);
-    Plotly.restyle('bar', 'y',[top10_ids.reverse()]);
-    Plotly.restyle('bar', 'text',[person.otu_labels.slice(0,10).reverse()]);
-  
-    //Restyle Bubble Chart
-    let update = {
-      x: [person.otu_ids],
-      y: [person.sample_values],
-      text: [person.otu_labels],
-      'marker.color':[person.otu_ids],
-      'marker.size': [person.sample_values]
-    }
-    
-    Plotly.restyle('bubble',update);
-
-
-    //Update demographics 
-    d3.select('#sample-metadata').html('');
-    //d3.select('#sample-metadata').selectAll('p').remove());
-    console.log(demographics);
-    createDemo(demographics);
-
-    //Update Gague Chart (send new value for wfreq)
-    Plotly.restyle('gauge','value',[demographics.wfreq]);
-  
-  });
+  // Render the plot to the div tag with id "gauge"
+  Plotly.newPlot('gauge', gauge, layout);
 }
