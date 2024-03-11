@@ -25,7 +25,7 @@ d3.json(url).then(function(data) {
     //Restyle Bar Graph
     // slice first 10 (top 10) OTU ids and map text 'OTU' in front of each ID 
     let top10_ids = person.otu_ids.slice(0,10).map(id => `OTU ${id}  `);
-    // Update person/subject-specific data in bargraph (x values, y values and hover text)
+    // Update person/subject-specific data for bargraph (x values, y values and hover text)
     let updateBar = {
       x: [person.sample_values.slice(0,10).reverse()],
       y: [top10_ids.reverse()],
@@ -35,7 +35,7 @@ d3.json(url).then(function(data) {
     Plotly.restyle('bar', updateBar);
 
     //Restyle Bubble Chart
-    // Update person/subject-specific data in bargraph (x values, y values and hover text)
+    // Update person/subject-specific data for bubble chart (x values, y values, hover text, bubble/maker color & size)
     let updateBubble = {
       x: [person.otu_ids],
       y: [person.sample_values],
@@ -43,17 +43,17 @@ d3.json(url).then(function(data) {
       'marker.color':[person.otu_ids],
       'marker.size': [person.sample_values]
     }
-    
+    // Restyle bubble chart using updated data
     Plotly.restyle('bubble',updateBubble);
 
 
-    //Update demographics 
+    //Update demographics data
+    //select div containing current demographic data and clear all html (p) elements
     d3.select('#sample-metadata').html('');
-    //d3.select('#sample-metadata').selectAll('p').remove());
-    console.log(demographics);
+    // run createDemo function to enter updated/selected demographic data
     createDemo(demographics);
 
-    //Update Gague Chart (send new value for wfreq)
+    //Update/Restyle Gague Chart (send new value for wfreq)
     Plotly.restyle('gauge','value',[demographics.wfreq]);
   }
 });

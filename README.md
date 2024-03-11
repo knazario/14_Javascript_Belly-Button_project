@@ -1,11 +1,11 @@
 # 14_Javascript_Belly-Button_project
 
 ### Project Overview
-In this project, I created an interactive dashboard using HTML, CSS and Javascript, using belly button bacteria sample data(see reference below). The dashboard allows you to select individual subjects from the data by ID and updates the interactive Plotly charts and demographic informaiton based on your selection. 
+In this project, I created an interactive dashboard using HTML, CSS and Javascript, using belly button microbe sample data(see reference below). The dashboard allows you to select an individual subject (ID) from the dataset using a dropdown menu and updates the interactive Plotly charts and demographic informaiton based on your selection. 
 
 The interactive charts include:
-    - a bar chart displaying the Top 10 bacteria found in the subject
-    - a bubble (scatter) chart that shows all the bacteria samples found in the subject (size of bubble is based on sample value of the bacteria, i.e. more of the bacteria means a larger bubble). 
+    - a bar chart displaying the Top 10 microbial species/OTUs(Operational taxonomic units) found in the subject
+    - a bubble (scatter) chart that shows all the OTU samples found in the subject (size of bubble is based on sample value of the microbes, i.e. more of the microbes means a larger bubble). 
     - a gauge chart that shows the number of belly button washings the subject reported per week
 
 For the bubble chart, and additional feature of selecting the color scale was added. 
