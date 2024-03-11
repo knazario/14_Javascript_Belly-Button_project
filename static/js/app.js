@@ -12,9 +12,11 @@ d3.json(url).then(function(data) {
   //call init to initialize all charts with sample data (element 0, id: 940)
   init(data);
   
+  // Add listener (on change) to all updateAll function when dropdown menu changes (new id is selected)
   d3.select("#selDataset").on("change", updateAll);
 
   // updateAll function needs to be within .then() in order to access data and run on dropdown change
+  // updates all charts and demographic data based on subject id
   function updateAll(){
     // Assign the value of the dropdown menu option to a variable
     let sub_id = d3.select("#selDataset").property("value");
