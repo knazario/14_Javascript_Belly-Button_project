@@ -10,7 +10,7 @@ The interactive charts include:
 
 #### Additional Notes
 - For the bubble chart, an additional feature of selecting the color scale was added so you can toggle between "Earth"(default), "Viridis", and "Jet" colorscales. 
-- For the bar chart, the x-axis range adjusts automatically based on the top 10 sample sizes. For example, selecting subject 1279 (washes belly button 9 times a week), will give you a top 10 where the highest value is 18. For comparison, the first subject (940) has a highest value of 163 and others have some microbe samples that were in the 200-300 range. With that said, there is a clear diverisity of scale within the dataset. 
+- For the bar chart, the x-axis range adjusts automatically based on the top 10 sample sizes. For example, selecting subject 1279 (washes belly button 9 times a week), will give you a top 10 where the highest value is 18. For comparison, the first subject (940) has a highest value of 163 and others have some microbe samples that were in the 200-300+ range. With that said, there is a clear diverisity of scale within the dataset. 
 
 ### Live Demo
 This project is currently hosted on Github Pages and can be demoed 'live' at the url below:<br/>
