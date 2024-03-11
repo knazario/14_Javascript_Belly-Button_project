@@ -40,3 +40,6 @@ https://plotly.com/javascript/plotlyjs-function-reference/
 
 - Object.entries() documentation to access key-value pairs of dictionary<br/>
 https://javascript.info/keys-values-entries
+
+- Gauge Chart documentation<br/>
+https://plotly.com/javascript/gauge-charts/
